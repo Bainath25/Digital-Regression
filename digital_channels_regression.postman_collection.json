@@ -1,0 +1,1211 @@
+{
+	"info": {
+		"_postman_id": "76a00101-126c-4959-acc4-4dbc68224960",
+		"name": "digital_channels_regression",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "15762969"
+	},
+	"item": [
+		{
+			"name": "Prerequisites",
+			"item": [
+				{
+					"name": "Fetch Test Plan Point Ids",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData =JSON.parse(responseBody);\r",
+									"//pm.globals.set(\"pointIdCount\", jsonData.count);\r",
+									"var i;\r",
+									"var pointIds;\r",
+									"for(i=0;i<jsonData.count;i++){    \r",
+									"    //pm.globals.set(\"pointId\"+(i+1), jsonData.value[i].id);\r",
+									"    if(i == 0){\r",
+									"        pointIds = jsonData.value[i].id;\r",
+									"    }else {\r",
+									"        pointIds = pointIds + \",\" + jsonData.value[i].id;\r",
+									"    }    \r",
+									"}\r",
+									"pm.globals.set(\"pointIds\", pointIds);\r",
+									"console.log(\"Test plan pointIds: \"+pointIds);"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"console.log(\"****************************************************************************************\")\r",
+									"console.log(\"**********************************API_Execution_Started*********************************\")\r",
+									"console.log(\"****************************************************************************************\")"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{VSOToken}}"
+							},
+							{
+								"key": "Authorization",
+								"value": "Basic OjZ6andxMmFxazNyZGYyM20ybnR1eWR4ZDY1ZnpicmY2dnhhd2NsemFqMzRwZHN6amRxZ2E=",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "https://subwaytechnology.visualstudio.com/{{project}}/_apis/test/plans/{{planId}}/suites/{{suiteId}}/points?api-version=6.0-preview",
+							"protocol": "https",
+							"host": [
+								"subwaytechnology",
+								"visualstudio",
+								"com"
+							],
+							"path": [
+								"{{project}}",
+								"_apis",
+								"test",
+								"plans",
+								"{{planId}}",
+								"suites",
+								"{{suiteId}}",
+								"points"
+							],
+							"query": [
+								{
+									"key": "api-version",
+									"value": "6.0-preview"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Runs ID",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Save valid common tests in a global variable\r",
+									"postman.setGlobalVariable(\"validCommonTests\", () => {\r",
+									"    var jsonData =JSON.parse(responseBody);\r",
+									"    // The Status code is 400\r",
+									"    pm.expect(responseCode.code, 'Status code is 200').to.be.oneOf([200, 201])\r",
+									"    pm.expect(responseCode.code, 'Status code is Ok').to.be.ok;\r",
+									"    // The response time must be less than 10000 milliseconds\r",
+									"    //pm.expect(pm.response.responseTime).to.be.below(10000);\r",
+									"    // The verify API response details\r",
+									"    \r",
+									"});\r",
+									"\r",
+									"\r",
+									"postman.setGlobalVariable(\"invalidCommonTests400\", description => { \r",
+									"    var jsonData =JSON.parse(responseBody); \r",
+									"    // The Status code is 400\r",
+									"    pm.expect(responseCode.code, 'Status code is 400').to.be.equal(400);\r",
+									"    // The response time must be less than 5000 milliseconds\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(5000);\r",
+									"    // The verify API response details\r",
+									"    //pm.expect(jsonData.code).to.eql(400);\r",
+									"    pm.expect(jsonData.message).to.eql(\"Bad request\");\r",
+									"    //pm.expect(jsonData.Error.description).to.eql(description);   \r",
+									"\r",
+									"    //pm.expect(jsonData.Error.timestamp).to.exist //check not equal to undefined\r",
+									"    //pm.expect(jsonData.Error.timestamp).to.not.be.null; //if not equal to null\r",
+									"\r",
+									"    //pm.expect(jsonData.Error.transactionId).to.exist //check not equal to undefined\r",
+									"    //pm.expect(jsonData.Error.transactionId).to.not.be.null; //if not equal to null\r",
+									"});\r",
+									"\r",
+									"\r",
+									"postman.setGlobalVariable(\"invalidCommonTests405\", description => { \r",
+									"    var jsonData =JSON.parse(responseBody); \r",
+									"    // The Status code is 405\r",
+									"    pm.expect(responseCode.code, 'Status code is 405').to.be.equal(405);\r",
+									"    // The response time must be less than 5000 milliseconds\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(5000);\r",
+									"    // The verify API response details\r",
+									"    pm.expect(jsonData.Error.code).to.eql(405);\r",
+									"    pm.expect(jsonData.Error.message).to.eql(\"Method not allowed\");\r",
+									"    pm.expect(jsonData.Error.description).to.eql(description);   \r",
+									"});\r",
+									"\r",
+									"\r",
+									"postman.setGlobalVariable(\"invalidCommonTests401\", description => { \r",
+									"    var jsonData =JSON.parse(responseBody); \r",
+									"    // The Status code is 401\r",
+									"    pm.expect(responseCode.code, 'Status code is 401').to.be.equal(401);\r",
+									"    // The response time must be less than 5000 milliseconds\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(5000);\r",
+									"    // The verify API response details    \r",
+									"    pm.expect(jsonData.error).to.eql(description);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"postman.setGlobalVariable(\"invalidCommonTests403\", description => { \r",
+									"    var jsonData =JSON.parse(responseBody); \r",
+									"    // The Status code is 403\r",
+									"    pm.expect(responseCode.code, 'Status code is 403').to.be.equal(403);\r",
+									"    // The response time must be less than 5000 milliseconds\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(5000);\r",
+									"    // The verify API response details    \r",
+									"    pm.expect(jsonData.message).to.eql(description);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"postman.setGlobalVariable(\"invalidCommonTests404\", description => { \r",
+									"    var jsonData =JSON.parse(responseBody); \r",
+									"    // The Status code is 404\r",
+									"    pm.expect(responseCode.code, 'Status code is 404').to.be.equal(404);\r",
+									"    // The response time must be less than 5000 milliseconds\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(5000);\r",
+									"     // The verify API response details\r",
+									"    pm.expect(jsonData.Error.code).to.eql(404);\r",
+									"    pm.expect(jsonData.Error.message).to.eql(\"Resource not found\");\r",
+									"    pm.expect(jsonData.Error.description).to.eql(description);   \r",
+									"\r",
+									"    pm.expect(jsonData.Error.timestamp).to.exist //check not equal to undefined\r",
+									"    pm.expect(jsonData.Error.timestamp).to.not.be.null; //if not equal to null\r",
+									"\r",
+									"    pm.expect(jsonData.Error.transactionId).to.exist //check not equal to undefined\r",
+									"    pm.expect(jsonData.Error.transactionId).to.not.be.null; //if not equal to null\r",
+									"});\r",
+									"\r",
+									"\r",
+									"postman.setGlobalVariable(\"invalidCommonTests404_1\", description => { \r",
+									"    var jsonData =JSON.parse(responseBody); \r",
+									"    // The Status code is 404\r",
+									"    pm.expect(responseCode.code, 'Status code is 404').to.be.equal(404);\r",
+									"    // The response time must be less than 5000 milliseconds\r",
+									"    pm.expect(pm.response.responseTime).to.be.below(5000);\r",
+									"    // The verify API response details    \r",
+									"    pm.expect(jsonData.message).to.eql(description);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData =JSON.parse(responseBody);\r",
+									"pm.globals.set(\"runId\", jsonData.id);\r",
+									"console.log(\"RunId: \"+jsonData.id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{VSOToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"automated\":true,\r\n    \"name\": \"{{runsName}}\",\r\n    \"plan\": {\r\n    \"id\": \"{{planId}}\"\r\n  },\r\n  \"pointIds\": [\r\n    {{pointIds}}\r\n  ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://subwaytechnology.visualstudio.com/{{project}}/_apis/test/runs?api-version=6.0",
+							"protocol": "https",
+							"host": [
+								"subwaytechnology",
+								"visualstudio",
+								"com"
+							],
+							"path": [
+								"{{project}}",
+								"_apis",
+								"test",
+								"runs"
+							],
+							"query": [
+								{
+									"key": "api-version",
+									"value": "6.0"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "get App config",
+			"item": [
+				{
+					"name": "Validate  with new static token_650643",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"\r",
+									"try{   \r",
+									"     eval(globals.validCommonTests)(); \r",
+									"        pm.test(\"Validation of Response\", function () {  \r",
+									"               var jsonResponse =JSON.parse(responseBody);  \r",
+									"               pm.expect(jsonResponse.status).to.eql(\"Successful\");    \r",
+									"             pm.expect(jsonResponse.response.code).to.eql(\"0\");   \r",
+									"                  for(var i=0;i<jsonResponse.length;i++) {             \r",
+									"                pm.expect(jsonResponse.response.result[i].os).to.be.oneOf([\"Android\",\"iOS\"]);                }          \r",
+									" // pm.expect(pm.response.responseTime).to.be.below(5000);  \r",
+									"  });   \r",
+									" pm.globals.set(\"outcome\", \"Passed\");\r",
+									" }\r",
+									" catch (error) {  \r",
+									"       console.log(error);\r",
+									"          pm.globals.set(\"outcome\", \"Failed\"); \r",
+									"         pm.globals.set(\"errorMessage\", error.name+\":\"+error.message);\r",
+									"     }\r",
+									"     pm.globals.set(\"event\",\"Request Body==>\"+pm.request.body+\"\\n Response ==>\"+responseBody);\r",
+									"// update test case outcome\r",
+									"eval(globals.updateTestCaseOutcome)();\r",
+									"//encrypt\r",
+									"var message = pm.globals.get(\"event\"); \r",
+									"var base64Hash = CryptoJS.enc.Utf8.parse(message);\r",
+									"var base64 = CryptoJS.enc.Base64.stringify(base64Hash);\r",
+									"pm.globals.set(\"encrypted\", base64);eval(globals.uploadAttachment)();\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TokenConfig}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host_digital_channel}}/v1/app-config?os=Android",
+							"host": [
+								"{{host_digital_channel}}"
+							],
+							"path": [
+								"v1",
+								"app-config"
+							],
+							"query": [
+								{
+									"key": "os",
+									"value": "Android"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Validate response of Get app-config_586952",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"\r",
+									"try{   \r",
+									"     eval(globals.validCommonTests)(); \r",
+									"        pm.test(\"Validation of Response\", function () {  \r",
+									"               var jsonResponse =JSON.parse(responseBody);  \r",
+									"               pm.expect(jsonResponse.status).to.eql(\"Successful\");    \r",
+									"             pm.expect(jsonResponse.response.code).to.eql(\"0\");   \r",
+									"                  for(var i=0;i<jsonResponse.length;i++) {             \r",
+									"                pm.expect(jsonResponse.response.result[i].os).to.be.oneOf([\"Android\",\"iOS\"]);                }          \r",
+									" // pm.expect(pm.response.responseTime).to.be.below(5000);  \r",
+									"  });   \r",
+									" pm.globals.set(\"outcome\", \"Passed\");\r",
+									" }\r",
+									" catch (error) {  \r",
+									"       console.log(error);\r",
+									"          pm.globals.set(\"outcome\", \"Failed\"); \r",
+									"         pm.globals.set(\"errorMessage\", error.name+\":\"+error.message);\r",
+									"     }\r",
+									"     pm.globals.set(\"event\",\"Request Body==>\"+pm.request.body+\"\\n Response ==>\"+responseBody);\r",
+									"// update test case outcome\r",
+									"eval(globals.updateTestCaseOutcome)();\r",
+									"//encrypt\r",
+									"var message = pm.globals.get(\"event\"); \r",
+									"var base64Hash = CryptoJS.enc.Utf8.parse(message);\r",
+									"var base64 = CryptoJS.enc.Base64.stringify(base64Hash);\r",
+									"pm.globals.set(\"encrypted\", base64);eval(globals.uploadAttachment)();\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TokenConfig}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_digital_channel}}/v1/app-config?os=Android",
+							"host": [
+								"{{host_digital_channel}}"
+							],
+							"path": [
+								"v1",
+								"app-config"
+							],
+							"query": [
+								{
+									"key": "os",
+									"value": "Android"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Validate by giving invalid value to OS_586640",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"try{\r",
+									"    eval(globals.validCommonTests)();\r",
+									"    pm.test(\"Validation of Response\", function () {\r",
+									"        var jsonResponse =JSON.parse(responseBody);\r",
+									"        pm.expect(jsonResponse.status).to.eql(\"Failure\");\r",
+									"        pm.expect(jsonResponse.reason.code).to.eql(\"2\");\r",
+									"        pm.expect(jsonResponse.reason.message).to.eql(\"Invalid OS\");\r",
+									"    });\r",
+									"\r",
+									"    pm.globals.set(\"outcome\", \"Passed\");\r",
+									"}\r",
+									"catch (error) {\r",
+									"    console.log(error);\r",
+									"     pm.globals.set(\"outcome\", \"Failed\");\r",
+									"     pm.globals.set(\"errorMessage\", error.name+\":\"+error.message);\r",
+									"}\r",
+									" pm.globals.set(\"event\",\"Request Body==>\"+pm.request.body+\"\\n Response ==>\"+responseBody);\r",
+									"// update test case outcome\r",
+									"eval(globals.updateTestCaseOutcome)();\r",
+									"//encrypt\r",
+									"var message = pm.globals.get(\"event\"); \r",
+									"var base64Hash = CryptoJS.enc.Utf8.parse(message);\r",
+									"var base64 = CryptoJS.enc.Base64.stringify(base64Hash);\r",
+									"pm.globals.set(\"encrypted\", base64);eval(globals.uploadAttachment)();\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TokenConfig}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_digital_channel}}/v1/app-config?os=123Android",
+							"host": [
+								"{{host_digital_channel}}"
+							],
+							"path": [
+								"v1",
+								"app-config"
+							],
+							"query": [
+								{
+									"key": "os",
+									"value": "123Android"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Validate Standardized logging _680562",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"\r",
+									"try{   \r",
+									"     eval(globals.validCommonTests)(); \r",
+									"        pm.test(\"Validation of Response\", function () {  \r",
+									"               var jsonResponse =JSON.parse(responseBody);  \r",
+									"               pm.expect(jsonResponse.status).to.eql(\"Successful\");    \r",
+									"             pm.expect(jsonResponse.response.code).to.eql(\"0\");   \r",
+									"                  for(var i=0;i<jsonResponse.length;i++) {             \r",
+									"                pm.expect(jsonResponse.response.result[i].os).to.be.oneOf([\"Android\",\"iOS\"]);                }          \r",
+									" // pm.expect(pm.response.responseTime).to.be.below(5000);  \r",
+									"  });   \r",
+									" pm.globals.set(\"outcome\", \"Passed\");\r",
+									" }\r",
+									" catch (error) {  \r",
+									"       console.log(error);\r",
+									"          pm.globals.set(\"outcome\", \"Failed\"); \r",
+									"         pm.globals.set(\"errorMessage\", error.name+\":\"+error.message);\r",
+									"     }\r",
+									"     pm.globals.set(\"event\",\"Request Body==>\"+pm.request.body+\"\\n Response ==>\"+responseBody);\r",
+									"// update test case outcome\r",
+									"eval(globals.updateTestCaseOutcome)();\r",
+									"//encrypt\r",
+									"var message = pm.globals.get(\"event\"); \r",
+									"var base64Hash = CryptoJS.enc.Utf8.parse(message);\r",
+									"var base64 = CryptoJS.enc.Base64.stringify(base64Hash);\r",
+									"pm.globals.set(\"encrypted\", base64);eval(globals.uploadAttachment)();\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TokenConfig}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_digital_channel}}/v1/app-config?os=iOS",
+							"host": [
+								"{{host_digital_channel}}"
+							],
+							"path": [
+								"v1",
+								"app-config"
+							],
+							"query": [
+								{
+									"key": "os",
+									"value": "iOS"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Validate new akamai url Get app-config _680569",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"\r",
+									"try{   \r",
+									"     eval(globals.validCommonTests)(); \r",
+									"        pm.test(\"Validation of Response\", function () {  \r",
+									"               var jsonResponse =JSON.parse(responseBody);  \r",
+									"               pm.expect(jsonResponse.status).to.eql(\"Successful\");    \r",
+									"             pm.expect(jsonResponse.response.code).to.eql(\"0\");   \r",
+									"                  for(var i=0;i<jsonResponse.length;i++) {             \r",
+									"                pm.expect(jsonResponse.response.result[i].os).to.be.oneOf([\"Android\",\"iOS\"]);                }          \r",
+									" // pm.expect(pm.response.responseTime).to.be.below(5000);  \r",
+									"  });   \r",
+									" pm.globals.set(\"outcome\", \"Passed\");\r",
+									" }\r",
+									" catch (error) {  \r",
+									"       console.log(error);\r",
+									"          pm.globals.set(\"outcome\", \"Failed\"); \r",
+									"         pm.globals.set(\"errorMessage\", error.name+\":\"+error.message);\r",
+									"     }\r",
+									"     pm.globals.set(\"event\",\"Request Body==>\"+pm.request.body+\"\\n Response ==>\"+responseBody);\r",
+									"// update test case outcome\r",
+									"eval(globals.updateTestCaseOutcome)();\r",
+									"//encrypt\r",
+									"var message = pm.globals.get(\"event\"); \r",
+									"var base64Hash = CryptoJS.enc.Utf8.parse(message);\r",
+									"var base64 = CryptoJS.enc.Base64.stringify(base64Hash);\r",
+									"pm.globals.set(\"encrypted\", base64);eval(globals.uploadAttachment)();\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TokenConfig}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_digital_channel}}/v1/app-config?os=Android",
+							"host": [
+								"{{host_digital_channel}}"
+							],
+							"path": [
+								"v1",
+								"app-config"
+							],
+							"query": [
+								{
+									"key": "os",
+									"value": "Android"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Validate the positive response_650654",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"\r",
+									"try{   \r",
+									"     eval(globals.validCommonTests)(); \r",
+									"        pm.test(\"Validation of Response\", function () {  \r",
+									"               var jsonResponse =JSON.parse(responseBody);  \r",
+									"               pm.expect(jsonResponse.status).to.eql(\"Successful\");    \r",
+									"             pm.expect(jsonResponse.response.code).to.eql(\"0\");   \r",
+									"                  for(var i=0;i<jsonResponse.length;i++) {             \r",
+									"                pm.expect(jsonResponse.response.result[i].os).to.be.oneOf([\"Android\",\"iOS\"]);                }          \r",
+									" // pm.expect(pm.response.responseTime).to.be.below(5000);  \r",
+									"  });   \r",
+									" pm.globals.set(\"outcome\", \"Passed\");\r",
+									" }\r",
+									" catch (error) {  \r",
+									"       console.log(error);\r",
+									"          pm.globals.set(\"outcome\", \"Failed\"); \r",
+									"         pm.globals.set(\"errorMessage\", error.name+\":\"+error.message);\r",
+									"     }\r",
+									"     pm.globals.set(\"event\",\"Request Body==>\"+pm.request.body+\"\\n Response ==>\"+responseBody);\r",
+									"// update test case outcome\r",
+									"eval(globals.updateTestCaseOutcome)();\r",
+									"//encrypt\r",
+									"var message = pm.globals.get(\"event\"); \r",
+									"var base64Hash = CryptoJS.enc.Utf8.parse(message);\r",
+									"var base64 = CryptoJS.enc.Base64.stringify(base64Hash);\r",
+									"pm.globals.set(\"encrypted\", base64);eval(globals.uploadAttachment)();\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{TokenConfig}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_digital_channel}}/v1/app-config?os=iOS",
+							"host": [
+								"{{host_digital_channel}}"
+							],
+							"path": [
+								"v1",
+								"app-config"
+							],
+							"query": [
+								{
+									"key": "os",
+									"value": "iOS"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "get App Version",
+			"item": [
+				{
+					"name": "Validate by giving invalid value to OS_586587",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"try{\r",
+									"    eval(globals.validCommonTests)();\r",
+									"    pm.test(\"Validation of Response\", function () {\r",
+									"        var jsonResponse =JSON.parse(responseBody);\r",
+									"        pm.expect(jsonResponse.status).to.eql(\"Failure\");\r",
+									"        pm.expect(jsonResponse.reason.code).to.eql(\"2\");\r",
+									"        pm.expect(jsonResponse.reason.message).to.eql(\"Invalid OS\");\r",
+									"    });\r",
+									"\r",
+									"    pm.globals.set(\"outcome\", \"Passed\");\r",
+									"}\r",
+									"catch (error) {\r",
+									"    console.log(error);\r",
+									"     pm.globals.set(\"outcome\", \"Failed\");\r",
+									"     pm.globals.set(\"errorMessage\", error.name+\":\"+error.message);\r",
+									"}\r",
+									" pm.globals.set(\"event\",\"Request Body==>\"+pm.request.body+\"\\n Response ==>\"+responseBody);\r",
+									"// update test case outcome\r",
+									"eval(globals.updateTestCaseOutcome)();\r",
+									"//encrypt\r",
+									"var message = pm.globals.get(\"event\"); \r",
+									"var base64Hash = CryptoJS.enc.Utf8.parse(message);\r",
+									"var base64 = CryptoJS.enc.Base64.stringify(base64Hash);\r",
+									"pm.globals.set(\"encrypted\", base64);eval(globals.uploadAttachment)();\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{versionToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_digital_channel}}/v1/app-version?os=123Android",
+							"host": [
+								"{{host_digital_channel}}"
+							],
+							"path": [
+								"v1",
+								"app-version"
+							],
+							"query": [
+								{
+									"key": "os",
+									"value": "123Android"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Validate  with new static token_650668",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"\r",
+									"try{   \r",
+									"     eval(globals.validCommonTests)(); \r",
+									"        pm.test(\"Validation of Response\", function () {  \r",
+									"               var jsonResponse =JSON.parse(responseBody);  \r",
+									"               pm.expect(jsonResponse.status).to.eql(\"Successful\");    \r",
+									"             pm.expect(jsonResponse.response.code).to.eql(\"0\");   \r",
+									"                  for(var i=0;i<jsonResponse.length;i++) {             \r",
+									"                pm.expect(jsonResponse.response.result[i].os).to.be.oneOf([\"Android\",\"iOS\"]);                }          \r",
+									" // pm.expect(pm.response.responseTime).to.be.below(5000);  \r",
+									"  });   \r",
+									" pm.globals.set(\"outcome\", \"Passed\");\r",
+									" }\r",
+									" catch (error) {  \r",
+									"       console.log(error);\r",
+									"          pm.globals.set(\"outcome\", \"Failed\"); \r",
+									"         pm.globals.set(\"errorMessage\", error.name+\":\"+error.message);\r",
+									"     }\r",
+									"     pm.globals.set(\"event\",\"Request Body==>\"+pm.request.body+\"\\n Response ==>\"+responseBody);\r",
+									"// update test case outcome\r",
+									"eval(globals.updateTestCaseOutcome)();\r",
+									"//encrypt\r",
+									"var message = pm.globals.get(\"event\"); \r",
+									"var base64Hash = CryptoJS.enc.Utf8.parse(message);\r",
+									"var base64 = CryptoJS.enc.Base64.stringify(base64Hash);\r",
+									"pm.globals.set(\"encrypted\", base64);eval(globals.uploadAttachment)();\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{versionToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_digital_channel}}/v1/app-version?os=Android",
+							"host": [
+								"{{host_digital_channel}}"
+							],
+							"path": [
+								"v1",
+								"app-version"
+							],
+							"query": [
+								{
+									"key": "os",
+									"value": "Android"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Validate Standardized logging_680565",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"\r",
+									"try{   \r",
+									"     eval(globals.validCommonTests)(); \r",
+									"        pm.test(\"Validation of Response\", function () {  \r",
+									"               var jsonResponse =JSON.parse(responseBody);  \r",
+									"               pm.expect(jsonResponse.status).to.eql(\"Successful\");    \r",
+									"             pm.expect(jsonResponse.response.code).to.eql(\"0\");   \r",
+									"                  for(var i=0;i<jsonResponse.length;i++) {             \r",
+									"                pm.expect(jsonResponse.response.result[i].os).to.be.oneOf([\"Android\",\"iOS\"]);                }          \r",
+									" // pm.expect(pm.response.responseTime).to.be.below(5000);  \r",
+									"  });   \r",
+									" pm.globals.set(\"outcome\", \"Passed\");\r",
+									" }\r",
+									" catch (error) {  \r",
+									"       console.log(error);\r",
+									"          pm.globals.set(\"outcome\", \"Failed\"); \r",
+									"         pm.globals.set(\"errorMessage\", error.name+\":\"+error.message);\r",
+									"     }\r",
+									"     pm.globals.set(\"event\",\"Request Body==>\"+pm.request.body+\"\\n Response ==>\"+responseBody);\r",
+									"// update test case outcome\r",
+									"eval(globals.updateTestCaseOutcome)();\r",
+									"//encrypt\r",
+									"var message = pm.globals.get(\"event\"); \r",
+									"var base64Hash = CryptoJS.enc.Utf8.parse(message);\r",
+									"var base64 = CryptoJS.enc.Base64.stringify(base64Hash);\r",
+									"pm.globals.set(\"encrypted\", base64);eval(globals.uploadAttachment)();\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{versionToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_digital_channel}}/v1/app-version?os=Android",
+							"host": [
+								"{{host_digital_channel}}"
+							],
+							"path": [
+								"v1",
+								"app-version"
+							],
+							"query": [
+								{
+									"key": "os",
+									"value": "Android"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Validate new akamai url Get app-version_680672",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"\r",
+									"try{   \r",
+									"     eval(globals.validCommonTests)(); \r",
+									"        pm.test(\"Validation of Response\", function () {  \r",
+									"               var jsonResponse =JSON.parse(responseBody);  \r",
+									"               pm.expect(jsonResponse.status).to.eql(\"Successful\");    \r",
+									"             pm.expect(jsonResponse.response.code).to.eql(\"0\");   \r",
+									"                  for(var i=0;i<jsonResponse.length;i++) {             \r",
+									"                pm.expect(jsonResponse.response.result[i].os).to.be.oneOf([\"Android\",\"iOS\"]);                }          \r",
+									" // pm.expect(pm.response.responseTime).to.be.below(5000);  \r",
+									"  });   \r",
+									" pm.globals.set(\"outcome\", \"Passed\");\r",
+									" }\r",
+									" catch (error) {  \r",
+									"       console.log(error);\r",
+									"          pm.globals.set(\"outcome\", \"Failed\"); \r",
+									"         pm.globals.set(\"errorMessage\", error.name+\":\"+error.message);\r",
+									"     }\r",
+									"     pm.globals.set(\"event\",\"Request Body==>\"+pm.request.body+\"\\n Response ==>\"+responseBody);\r",
+									"// update test case outcome\r",
+									"eval(globals.updateTestCaseOutcome)();\r",
+									"//encrypt\r",
+									"var message = pm.globals.get(\"event\"); \r",
+									"var base64Hash = CryptoJS.enc.Utf8.parse(message);\r",
+									"var base64 = CryptoJS.enc.Base64.stringify(base64Hash);\r",
+									"pm.globals.set(\"encrypted\", base64);eval(globals.uploadAttachment)();\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{versionToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_digital_channel}}/v1/app-version?os=Android",
+							"host": [
+								"{{host_digital_channel}}"
+							],
+							"path": [
+								"v1",
+								"app-version"
+							],
+							"query": [
+								{
+									"key": "os",
+									"value": "Android"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Finalize",
+			"item": [
+				{
+					"name": "Update Runs Id",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"const moment = require('moment');\r",
+									"pm.globals.set(\"today\", moment().format(\"MM/DD/YYYY\"));"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"console.log(\"****************************************************************************************\")\r",
+									"console.log(\"**********************************API_Execution_Ended***********************************\")\r",
+									"console.log(\"****************************************************************************************\")"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{VSOToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"state\": \"Completed\",\r\n    \"comment\": \"Test comment\",\r\n    \"completedDate\":\"{{today}}\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://subwaytechnology.visualstudio.com/{{project}}/_apis/test/runs/{{runId}}?api-version=6.0",
+							"protocol": "https",
+							"host": [
+								"subwaytechnology",
+								"visualstudio",
+								"com"
+							],
+							"path": [
+								"{{project}}",
+								"_apis",
+								"test",
+								"runs",
+								"{{runId}}"
+							],
+							"query": [
+								{
+									"key": "api-version",
+									"value": "6.0"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"pm.globals.unset(\"testCaseId\");",
+					"console.log(\"request Name->\",pm.info.requestName);",
+					"let tcId = pm.info.requestName.split('_')[1];",
+					"if(tcId != undefined){",
+					"pm.globals.set(\"testCaseId\", pm.info.requestName.split('_')[1]);",
+					"pm.globals.unset(\"outcome\");",
+					"pm.globals.unset(\"errorMessage\");",
+					"//To fetch and store test case resultId",
+					"pm.sendRequest({",
+					"    url: `https://subwaytechnology.visualstudio.com/${pm.variables.get('project')}/_apis/test/plans/${pm.variables.get('planId')}/suites/${pm.variables.get('suiteId')}/points?testCaseId=${pm.variables.get('testCaseId')}&api-version=6.0-preview`,",
+					"    method: 'GET',",
+					"    header: {",
+					"        'Authorization': pm.variables.get('VSOToken')",
+					"    }",
+					"}, function (err, res) {",
+					"    try{",
+					"        pm.globals.set(\"resultId\", res.json().value[0].lastResult.id);",
+					"        console.log(\"Test case \" + pm.variables.get('testCaseId') + \" resultId : \"+res.json().value[0].lastResult.id);                    ",
+					"        } catch (error) {}",
+					"    });",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"//To update test case outcome",
+					"postman.setGlobalVariable(\"updateTestCaseOutcome\", () => {  ",
+					"var hasNumber = /^[0-9]+$/;",
+					"",
+					"var requestBody",
+					"if(pm.variables.get('errorMessage')){",
+					"    requestBody = [{\"id\":`${pm.variables.get('resultId')}`,\"state\":\"Completed\",\"comment\":\"Test comment\",\"TestCaseResult\":`${pm.variables.get('outcome')}`,\"outcome\":`${pm.variables.get('outcome')}`,\"errorMessage\":`${pm.variables.get('errorMessage')}`}]",
+					"} else {",
+					"    requestBody = [{\"id\":`${pm.variables.get('resultId')}`,\"state\":\"Completed\",\"comment\":\"Test comment\",\"TestCaseResult\":`${pm.variables.get('outcome')}`,\"outcome\":`${pm.variables.get('outcome')}`}]",
+					"}",
+					"",
+					"//var myString = pm.variables.get('resultId');",
+					"if(hasNumber.test(pm.variables.get('resultId'))){",
+					"    pm.sendRequest({",
+					"        url: `https://subwaytechnology.visualstudio.com/${pm.variables.get('project')}/_apis/test/runs/${pm.variables.get('runId')}/results?api-version=6.0-preview`,",
+					"        method: 'PATCH',",
+					"        header: {",
+					"            'Authorization': pm.variables.get('VSOToken'),",
+					"            'Content-Type': 'application/json',",
+					"        },",
+					"        body: {",
+					"            mode: 'raw',",
+					"            raw: JSON.stringify(requestBody)",
+					"        }",
+					"    },function (err, res) {",
+					"   try{",
+					"         console.log(`The test case id ${pm.variables.get('testCaseId')} outcome updated as ${pm.variables.get('outcome')}.`)                  ",
+					"        } catch (error) {",
+					"            console.log(error)  ",
+					"        }",
+					"        });",
+					"        }",
+					"});"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "project",
+			"value": "Middleware"
+		},
+		{
+			"key": "VSOToken",
+			"value": "Basic OjZ6andxMmFxazNyZGYyM20ybnR1eWR4ZDY1ZnpicmY2dnhhd2NsemFqMzRwZHN6amRxZ2E="
+		},
+		{
+			"key": "planId",
+			"value": "649620"
+		},
+		{
+			"key": "suiteId",
+			"value": "653667"
+		},
+		{
+			"key": "runsName",
+			"value": "Digital_Channel_Regression"
+		},
+		{
+			"key": "encrypted",
+			"value": ""
+		}
+	]
+}
